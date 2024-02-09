@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #edited_image {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Photo Editor</h1>
+    <form action="/edit" method="post" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/*" required><br><br>
+        <select id="options">
+            <option value="b/w">Black and White</option>
+            <option value="90deg">Rotate 90deg</option>
+            <option value="45deg">Rotate 45deg</option>
+            <option value="180deg">Rotate 180deg</option>
+            <option value="resize">Resize</option>
+            <option value="filter">Filter</option>
+        </select>
+        <button type="submit">Edit Photo</button>
+    </form>
+    <br>
+    <div id="edited_image"></div>
+
+    <script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var form = e.target;
+            var formData = new FormData(form);
+
+            formData.set('mode', options.value)
+
+            document.getElementById('edited_image').innerHTML = '<p>Loading...</p>';
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                var img = document.createElement('img');
+                img.src = URL.createObjectURL(blob);
+                img.alt = 'Edited Image';
+                document.getElementById('edited_image').innerHTML = '';
+                document.getElementById('edited_image').appendChild(img);
+            })
+            .catch(error => {
+                console.error('There has been a problem with your fetch operation:', error);
+                document.getElementById('edited_image').innerHTML = '<p>Error loading image.</p>';
+            });
+        });
+    </script>
+</body>
+</html>
